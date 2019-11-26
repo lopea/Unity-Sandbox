@@ -2,7 +2,7 @@ VFX Sandbox
 -----------
 A collection of random garbage that I have made in unity.
 
-Most of this is to mess around in unity in general. 
+This entire project is for me to mess around in unity in general. 
 
 License
 -------
