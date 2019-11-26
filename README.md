@@ -6,4 +6,4 @@ This entire project is for me to mess around in unity in general.
 
 License
 -------
-MIT
+[MIT](LICENSE.md)
