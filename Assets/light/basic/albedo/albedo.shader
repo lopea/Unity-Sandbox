@@ -3,6 +3,8 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _AlbedoTex("Albedo", 2D) = "white" {}
+        _Tint("Albedo Tint", Color) = (1,1,1,1)
     }
     SubShader
     {
@@ -17,7 +19,7 @@
             // make fog work
             #pragma multi_compile_fog
 
-            #include "UnityCG.cginc"
+            #include "UnityStandardBRDF.cginc"
 
             struct appdata
             {
@@ -35,7 +37,9 @@
             };
 
             sampler2D _MainTex;
+            sampler2D _AlbedoTex;
             float4 _MainTex_ST;
+            float4 _Tint;
 
             v2f vert (appdata v)
             {
@@ -49,13 +53,15 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
+                i.normal = normalize(i.normal);
                 float3 lightdir = _WorldSpaceLightPos0;
-
-                // sample the texture
+                float4 lightcolor = _LightColor0;
                 fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 albedo = tex2D(_AlbedoTex,i.uv) * _Tint;
+                float4 diffuse = lightcolor * col * albedo * DotClamped(i.normal,lightdir);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
-                return col;
+                return diffuse;
             }
             ENDCG
         }

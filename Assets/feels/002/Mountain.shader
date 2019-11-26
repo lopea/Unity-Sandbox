@@ -42,8 +42,8 @@
               n += snoise(d * (i + 1) + float2(0,t));
               }
              
-              saturate(n); 
-              n -= n * (1 - abs(d.x - 0.5));
+               
+              n *= (d.x)* 1;
               return n;
             }
 
