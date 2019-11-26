@@ -1,4 +1,4 @@
-VFX Sandbox
+Unity Sandbox
 -----------
 A collection of random garbage that I have made in unity.
 
