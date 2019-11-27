@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: blinn
-  m_Shader: {fileID: 4800000, guid: 98f9feef612264c6d8f63c6334ae12d4, type: 3}
+  m_Name: cool
+  m_Shader: {fileID: 4800000, guid: bdf2cbd3d67bf8b4092f5185a3efa65c, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -19,12 +19,12 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _Albedo:
+    - _MainTex:
         m_Texture: {fileID: 10309, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Metallic: 1
-    - _Smoothness: 0.4
+    - _Metallic: 0.18
+    - _Smoothness: 0.33
     m_Colors:
     - _Tint: {r: 1, g: 1, b: 1, a: 1}
