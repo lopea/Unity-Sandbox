@@ -68,4 +68,27 @@ float4 frag(v2f i) : SV_Target
     _Smoothness, i.normal, viewdir, light, indir);
 }
 
+UnityLight light(v2f i)
+{
+  UnityLight l;
+  l.dir = _WorldSpaceLightPos0.xyz;
+  l.color = _LightColor0.rgb;
+  l.ndotl = DotClamped(i.normal, l.dir);
+}
+
+float4 frag_point(v2f i) : SV_Target
+{
+  i.normal = normalize(i.normal);
+  float3 viewdir = normalize(_WorldSpaceCameraPos - i.worldpos);
+
+  float3 specTint;
+  float oneminus;
+  float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
+  albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic,specTint, oneminus);
+
+  UnityIndirect indir;
+  indir.diffuse = 0;
+  indir.specular = 0;
+  UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir);
+}
 #endif
