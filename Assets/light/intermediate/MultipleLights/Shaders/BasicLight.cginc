@@ -2,6 +2,8 @@
 //----------------------------------------------------------------------------
 //this file is made so it will be easier to have muliple passes 
 //and add mulitple lights in our shader
+//There is a lot of repitition in this shader, just getting used to the whole
+//shading process.
 //----------------------------------------------------------------------------
 
 //This should be same shader as the PBR shader in the basic's folder.
@@ -9,6 +11,7 @@
 #define _BASICLIGHT
 
 #include "UnityPBSLighting.cginc"
+#include "AutoLight.cginc"
 
 sampler2D _MainTex;
 float4 _MainTex_ST;
@@ -42,9 +45,10 @@ v2f vert(appdata v)
   return o;
 }
 
-//Fragment Shader
+//Fragment Shader for directional lights only
 float4 frag(v2f i) : SV_Target
 {
+#ifdef DIRECTIONAL
   i.normal = normalize(i.normal); 
   float3 viewdir = normalize(_WorldSpaceCameraPos - i.worldpos);
   float3 lightcol = _LightColor0.xyz;
@@ -66,14 +70,22 @@ float4 frag(v2f i) : SV_Target
 
   return UNITY_BRDF_PBS(albedo, specTint, oneminus, 
     _Smoothness, i.normal, viewdir, light, indir);
+#endif
+  return 0;
 }
 
 UnityLight light(v2f i)
 {
   UnityLight l;
-  l.dir = _WorldSpaceLightPos0.xyz;
-  l.color = _LightColor0.rgb;
+#ifndef DIRECTIONAL
+  l.dir = normalize(_WorldSpaceLightPos0.rgb - i.worldpos);
+#else
+  l.dir = _WorldSpaceLightPos0.rgb;
+#endif
+  UNITY_LIGHT_ATTENUATION(attenuation, 0, i.worldpos);
+  l.color = _LightColor0.rgb * attenuation;
   l.ndotl = DotClamped(i.normal, l.dir);
+  return l;
 }
 
 UnityIndirect indir()
@@ -83,16 +95,36 @@ UnityIndirect indir()
   i.specular = 0;
   return i;
 }
+
+//fragment shader for point lights only
 float4 frag_point(v2f i) : SV_Target
 {
+#ifdef POINT
   i.normal = normalize(i.normal);
   float3 viewdir = normalize(_WorldSpaceCameraPos - i.worldpos);
 
   float3 specTint;
   float oneminus;
   float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
-  albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic,specTint, oneminus);
+  albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specTint, oneminus);
 
-  UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir());
+  return UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir());
+#endif
+  return 0;
+}
+
+//fragment shader that renders all lights
+float4 frag_all(v2f i) : SV_Target
+{
+  i.normal = normalize(i.normal);
+  float3 viewdir = normalize(_WorldSpaceCameraPos - i.worldpos);
+
+  float oneminus;
+  float3 specTint;
+  float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
+  albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specTint, oneminus);
+
+  return UNITY_BRDF_PBS(albedo, specTint, oneminus,
+    _Smoothness, i.normal, viewdir, light(i), indir());
 }
 #endif

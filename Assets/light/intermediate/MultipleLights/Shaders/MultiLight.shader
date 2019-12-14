@@ -19,7 +19,6 @@
             #pragma target 3.0
             #pragma vertex vert
             #pragma fragment frag
-            
             #include "BasicLight.cginc"
             ENDCG
         }
@@ -32,6 +31,7 @@
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0
+            #pragma multi_compile_fwdadd
             #include "BasicLight.cginc"
             ENDCG
         }
