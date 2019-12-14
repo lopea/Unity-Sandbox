@@ -76,6 +76,13 @@ UnityLight light(v2f i)
   l.ndotl = DotClamped(i.normal, l.dir);
 }
 
+UnityIndirect indir()
+{
+  UnityIndirect i;
+  i.diffuse = 0;
+  i.specular = 0;
+  return i;
+}
 float4 frag_point(v2f i) : SV_Target
 {
   i.normal = normalize(i.normal);
@@ -86,9 +93,6 @@ float4 frag_point(v2f i) : SV_Target
   float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
   albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic,specTint, oneminus);
 
-  UnityIndirect indir;
-  indir.diffuse = 0;
-  indir.specular = 0;
-  UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir);
+  UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir());
 }
 #endif
