@@ -32,7 +32,18 @@ struct v2f {
   float2 uv : TEXCOORD0;
   float3 normal : TEXCOORD1;
   float3 worldpos : TEXCOORD2;
+#if VERTEXLIGHT_ON  //if pixel lights are given
+  float3 vertexLightColor : TEXCOORD3;
+#endif
 };
+
+void vertLight(inout v2f i)
+{
+#if VERTEXLIGHT_ON
+  i.vertexLightColor = unity_LightColor[0].rgb;
+#endif
+
+}
 
 //Vertex Shader
 v2f vert(appdata v)
@@ -42,6 +53,7 @@ v2f vert(appdata v)
   o.normal = UnityObjectToWorldNormal(v.normal);
   o.worldpos = mul(unity_ObjectToWorld,v.vertex);
   o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+  vertLight(o); 
   return o;
 }
 
@@ -88,11 +100,16 @@ UnityLight light(v2f i)
   return l;
 }
 
-UnityIndirect indir()
+
+//creates a struct any indirect light directed at the object.
+UnityIndirect indir(v2f o)
 {
   UnityIndirect i;
   i.diffuse = 0;
   i.specular = 0;
+#if VERTEXLIGHT_ON
+  i.diffuse = o.vertexLightColor;
+#endif
   return i;
 }
 
@@ -108,12 +125,12 @@ float4 frag_point(v2f i) : SV_Target
   float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
   albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specTint, oneminus);
 
-  return UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir());
+  return UNITY_BRDF_PBS(albedo, specTint, oneminus,_Smoothness, i.normal, viewdir,light(i), indir(i));
 #endif
   return 0;
 }
 
-//fragment shader that renders all lights
+//fragment shader that renders all lights (also used in the vertex light shader.)
 float4 frag_all(v2f i) : SV_Target
 {
   i.normal = normalize(i.normal);
@@ -125,6 +142,7 @@ float4 frag_all(v2f i) : SV_Target
   albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specTint, oneminus);
 
   return UNITY_BRDF_PBS(albedo, specTint, oneminus,
-    _Smoothness, i.normal, viewdir, light(i), indir());
+    _Smoothness, i.normal, viewdir, light(i), indir(i));
 }
+
 #endif
