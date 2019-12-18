@@ -108,7 +108,10 @@ UnityIndirect indir(v2f o)
   i.diffuse = 0;
   i.specular = 0;
 #if VERTEXLIGHT_ON
-  i.diffuse = o.vertexLightColor;
+  float lightvec = (_WorldSpaceLightPos0.rgb - o.worldpos);
+  float attenuation = 1 / (1 + dot(lightvec, lightvec) * unity_4LightAtten0.x);
+  float ndotl = DotClamped(i.normal, normalize(lightvec));
+  i.diffuse = o.vertexLightColor * attenuation * ndotl;
 #endif
   return i;
 }
