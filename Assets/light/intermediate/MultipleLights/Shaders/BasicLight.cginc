@@ -40,7 +40,12 @@ struct v2f {
 void vertLight(inout v2f i)
 {
 #if VERTEXLIGHT_ON
-  i.vertexLightColor = unity_LightColor[0].rgb;
+  i.vertexLightColor = Shade4PointLights(
+    unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+    unity_LightColor[0].rgb, unity_LightColor[1].rgb,
+    unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+    unity_4LightAtten0, i.worldpos, i.normal
+  );
 #endif
 
 }
@@ -110,9 +115,11 @@ UnityIndirect indir(v2f o)
 #if VERTEXLIGHT_ON
   float lightvec = (_WorldSpaceLightPos0.rgb - o.worldpos);
   float attenuation = 1 / (1 + dot(lightvec, lightvec) * unity_4LightAtten0.x);
-  float ndotl = DotClamped(i.normal, normalize(lightvec));
+  float ndotl = DotClamped(o.normal, normalize(lightvec));
   i.diffuse = o.vertexLightColor * attenuation * ndotl;
 #endif
+  //ambient light
+  i.diffuse += max(0, ShadeSH9(float4(o.normal, 1)));
   return i;
 }
 
@@ -143,6 +150,10 @@ float4 frag_all(v2f i) : SV_Target
   float3 specTint;
   float3 albedo = tex2D(_MainTex, i.uv) * _Tint;
   albedo = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specTint, oneminus);
+  
+  //ambient color (Spherical Harmonics)
+  //float3 shColor = ShadeSH9(float4(i.normal, 1));
+  //return float4(shColor,1);
 
   return UNITY_BRDF_PBS(albedo, specTint, oneminus,
     _Smoothness, i.normal, viewdir, light(i), indir(i));
